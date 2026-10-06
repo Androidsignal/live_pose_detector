@@ -136,23 +136,33 @@ class PushUpFormDetector {
 
   static const Map<PushUpState, String> _messages = {
     PushUpState.startingPosition: 'Get into the push-up position.',
-    PushUpState.correctStartingPosition: "Great! You're in the correct position.",
+    PushUpState.correctStartingPosition:
+        "Great! You're in the correct position.",
     PushUpState.bodyTooHigh: 'Lower your hips and keep your body straight.',
-    PushUpState.bodyTooLow: 'Raise your hips slightly and keep your body aligned.',
+    PushUpState.bodyTooLow:
+        'Raise your hips slightly and keep your body aligned.',
     PushUpState.headTooLow: 'Keep your head aligned with your body.',
-    PushUpState.headTooHigh: 'Keep your neck neutral and look slightly forward.',
+    PushUpState.headTooHigh:
+        'Keep your neck neutral and look slightly forward.',
     PushUpState.elbowsTooWide: 'Keep your elbows closer to your body.',
-    PushUpState.elbowsTooClose: 'Adjust your elbows slightly outward for a comfortable position.',
-    PushUpState.backNotStraight: 'Keep your back straight and maintain a strong core.',
-    PushUpState.notGoingLowEnough: 'Lower your body further to complete the push-up.',
-    PushUpState.goingTooLow: "Don't lower too far. Maintain a controlled range of motion.",
+    PushUpState.elbowsTooClose:
+        'Adjust your elbows slightly outward for a comfortable position.',
+    PushUpState.backNotStraight:
+        'Keep your back straight and maintain a strong core.',
+    PushUpState.notGoingLowEnough:
+        'Lower your body further to complete the push-up.',
+    PushUpState.goingTooLow:
+        "Don't lower too far. Maintain a controlled range of motion.",
     PushUpState.correctDownwardMovement: 'Good! Keep lowering with control.',
     PushUpState.correctBottomPosition: 'Great depth! Now push back up.',
     PushUpState.correctUpwardMovement: 'Good push! Keep your body straight.',
     PushUpState.correctPushUpCompleted: 'Perfect push-up! Keep going.',
-    PushUpState.movementTooFast: 'Slow down and perform the movement with control.',
-    PushUpState.incompletePushUp: 'Complete the full movement from top to bottom.',
-    PushUpState.wrongBodyAlignment: 'Align your head, shoulders, hips, and legs.',
+    PushUpState.movementTooFast:
+        'Slow down and perform the movement with control.',
+    PushUpState.incompletePushUp:
+        'Complete the full movement from top to bottom.',
+    PushUpState.wrongBodyAlignment:
+        'Align your head, shoulders, hips, and legs.',
     PushUpState.correctFormMaintained: 'Excellent form! Keep it up.',
     PushUpState.noMovementDetected: "Start your push-up when you're ready.",
   };
@@ -246,14 +256,16 @@ class PushUpFormDetector {
 
     // Elbow angle first — it drives both the depth-perspective tolerance
     // below and the rep phase machine.
-    final rawElbowAngle = angleBetweenLandmarks(side.shoulder, side.elbow, side.wrist);
+    final rawElbowAngle =
+        angleBetweenLandmarks(side.shoulder, side.elbow, side.wrist);
     // Deep in a rep, a single side-on 2D camera reads more hip/head
     // deviation than actually exists — the torso foreshortens as the
     // elbow bends. Scale tolerance up smoothly from the top (0) to full
     // depth (depthToleranceExpansion), using *last* frame's smoothed
     // angle so this doesn't depend on this frame's phase update yet.
     final elbowForTolerance = _smoothedElbowAngle ?? rawElbowAngle;
-    final depthFactor = ((_t.topElbowAngle - elbowForTolerance) / (_t.topElbowAngle - _t.bottomElbowAngle))
+    final depthFactor = ((_t.topElbowAngle - elbowForTolerance) /
+            (_t.topElbowAngle - _t.bottomElbowAngle))
         .clamp(0.0, 1.0);
     final toleranceScale = 1 + depthFactor * _t.depthToleranceExpansion;
 
@@ -272,11 +284,14 @@ class PushUpFormDetector {
     // clip. Calibrate that angle alongside the deviations above, then
     // refuse to run rep logic at all once it's drifted too far from the
     // calibrated push-up orientation.
-    final rawBodyAngle =
-        math.atan2(side.ankle.y - side.shoulder.y, side.ankle.x - side.shoulder.x) * 180 / math.pi;
+    final rawBodyAngle = math.atan2(
+            side.ankle.y - side.shoulder.y, side.ankle.x - side.shoulder.x) *
+        180 /
+        math.pi;
     final unwrappedBodyAngle = _unwrap(rawBodyAngle, _unwrappedBodyAngle);
     _unwrappedBodyAngle = unwrappedBodyAngle;
-    final smoothedBodyAngle = _bodyAngleTracker.smooth(unwrappedBodyAngle, _smoothingFactor);
+    final smoothedBodyAngle =
+        _bodyAngleTracker.smooth(unwrappedBodyAngle, _smoothingFactor);
     if (calibrating) {
       _bodyAngleTracker.maybeCalibrate(
         smoothedBodyAngle,
@@ -286,7 +301,8 @@ class PushUpFormDetector {
     }
     final bodyRotation = _bodyAngleTracker.deviation(smoothedBodyAngle);
 
-    if (_bodyAngleTracker.calibrated && bodyRotation.abs() > _t.maxBodyRotationDegrees) {
+    if (_bodyAngleTracker.calibrated &&
+        bodyRotation.abs() > _t.maxBodyRotationDegrees) {
       // Body has rotated away from the calibrated push-up orientation —
       // whatever's happening now isn't a push-up. Drop any in-progress
       // rep (it can't be valid) but keep the calibration: if the person
@@ -300,36 +316,46 @@ class PushUpFormDetector {
       return _emit(PushUpState.startingPosition, timestamp, debug: null);
     }
 
-    final rawHipDev = _signed(signedLandmarkLineDeviation(side.shoulder, side.ankle, side.hip));
+    final rawHipDev = _signed(
+        signedLandmarkLineDeviation(side.shoulder, side.ankle, side.hip));
     final smoothedHipDev = _hipTracker.smooth(rawHipDev, _smoothingFactor);
     if (calibrating) {
-      _hipTracker.maybeCalibrate(smoothedHipDev, _t.calibrationFrames, _t.calibrationMaxSpread);
+      _hipTracker.maybeCalibrate(
+          smoothedHipDev, _t.calibrationFrames, _t.calibrationMaxSpread);
     }
     final hipDeviation = _hipTracker.deviation(smoothedHipDev);
 
-    final rawHeadDev = _signed(signedLandmarkLineDeviation(side.shoulder, side.hip, side.ear));
+    final rawHeadDev =
+        _signed(signedLandmarkLineDeviation(side.shoulder, side.hip, side.ear));
     final smoothedHeadDev = _headTracker.smooth(rawHeadDev, _smoothingFactor);
     if (calibrating) {
-      _headTracker.maybeCalibrate(smoothedHeadDev, _t.calibrationFrames, _t.calibrationMaxSpread);
+      _headTracker.maybeCalibrate(
+          smoothedHeadDev, _t.calibrationFrames, _t.calibrationMaxSpread);
     }
     final headDeviation = _headTracker.deviation(smoothedHeadDev);
 
-    final rawKneeDev = _signed(signedLandmarkLineDeviation(side.hip, side.ankle, side.knee));
+    final rawKneeDev =
+        _signed(signedLandmarkLineDeviation(side.hip, side.ankle, side.knee));
     final smoothedKneeDev = _kneeTracker.smooth(rawKneeDev, _smoothingFactor);
     if (calibrating) {
-      _kneeTracker.maybeCalibrate(smoothedKneeDev, _t.calibrationFrames, _t.calibrationMaxSpread);
+      _kneeTracker.maybeCalibrate(
+          smoothedKneeDev, _t.calibrationFrames, _t.calibrationMaxSpread);
     }
     final kneeDeviation = _kneeTracker.deviation(smoothedKneeDev);
 
-    final rawAbduction = angleBetweenLandmarks(side.elbow, side.shoulder, side.hip);
+    final rawAbduction =
+        angleBetweenLandmarks(side.elbow, side.shoulder, side.hip);
     final prevAbduction = _smoothedAbduction;
-    final abductionAngle =
-        prevAbduction == null ? rawAbduction : prevAbduction + (rawAbduction - prevAbduction) * _smoothingFactor;
+    final abductionAngle = prevAbduction == null
+        ? rawAbduction
+        : prevAbduction + (rawAbduction - prevAbduction) * _smoothingFactor;
     _smoothedAbduction = abductionAngle;
 
     final hip = _classifyHip(hipDeviation, toleranceScale);
-    final head = hip == null ? _classifyHead(headDeviation, toleranceScale) : null;
-    final elbow = (hip == null && head == null) ? _classifyElbow(abductionAngle) : null;
+    final head =
+        hip == null ? _classifyHead(headDeviation, toleranceScale) : null;
+    final elbow =
+        (hip == null && head == null) ? _classifyElbow(abductionAngle) : null;
     final formOk = hip == null && head == null && elbow == null;
 
     final phaseResult = _advancePhase(rawElbowAngle, timestamp, formOk: formOk);
@@ -362,7 +388,8 @@ class PushUpFormDetector {
     return _emit(chosen, timestamp, debug: debug);
   }
 
-  double _signed(double deviation) => _t.invertBodyLineSign ? -deviation : deviation;
+  double _signed(double deviation) =>
+      _t.invertBodyLineSign ? -deviation : deviation;
 
   /// Brings [raw] (degrees) within 180° of [previous] by adding/subtracting
   /// full turns, so EMA-smoothing an angle near the ±180° wraparound point
@@ -385,7 +412,8 @@ class PushUpFormDetector {
   /// — until then, [fallback] (the phase's own positive/neutral message)
   /// is shown instead. Everything else (depth/tempo/rep-summary/positive)
   /// passes straight through.
-  PushUpState _debounce(PushUpState topCandidate, PushUpState fallback, DateTime timestamp) {
+  PushUpState _debounce(
+      PushUpState topCandidate, PushUpState fallback, DateTime timestamp) {
     if (!_debouncedStates.contains(topCandidate)) {
       _pendingWarning = null;
       _pendingWarningSince = null;
@@ -396,7 +424,8 @@ class PushUpFormDetector {
       _pendingWarning = topCandidate;
       _pendingWarningSince = timestamp;
     }
-    final persisted = timestamp.difference(_pendingWarningSince!) >= _t.minWarningPersistence;
+    final persisted =
+        timestamp.difference(_pendingWarningSince!) >= _t.minWarningPersistence;
     return persisted ? topCandidate : fallback;
   }
 
@@ -405,7 +434,8 @@ class PushUpFormDetector {
     return index == -1 ? _priorityOrder.length : index;
   }
 
-  PushUpFeedback _emit(PushUpState state, DateTime timestamp, {required PushUpDebugInfo? debug}) {
+  PushUpFeedback _emit(PushUpState state, DateTime timestamp,
+      {required PushUpDebugInfo? debug}) {
     final feedback = PushUpFeedback(
       state: state,
       message: _messages[state]!,
@@ -424,7 +454,9 @@ class PushUpFormDetector {
   PushUpState? _classifyHip(double deviation, double toleranceScale) {
     final magnitude = deviation.abs();
     if (magnitude <= _t.hipMildDeviation * toleranceScale) return null;
-    if (magnitude <= _t.hipSevereDeviation * toleranceScale) return PushUpState.backNotStraight;
+    if (magnitude <= _t.hipSevereDeviation * toleranceScale) {
+      return PushUpState.backNotStraight;
+    }
     return deviation > 0 ? PushUpState.bodyTooLow : PushUpState.bodyTooHigh;
   }
 
@@ -434,29 +466,36 @@ class PushUpFormDetector {
   }
 
   PushUpState? _classifyElbow(double abductionAngle) {
-    if (abductionAngle < _t.elbowAbductionMin) return PushUpState.elbowsTooClose;
+    if (abductionAngle < _t.elbowAbductionMin) {
+      return PushUpState.elbowsTooClose;
+    }
     if (abductionAngle > _t.elbowAbductionMax) return PushUpState.elbowsTooWide;
     return null;
   }
 
   PushUpState? _classifyKnee(double deviation, double toleranceScale) {
-    if (deviation.abs() <= _t.kneeAlignmentDeviation * toleranceScale) return null;
+    if (deviation.abs() <= _t.kneeAlignmentDeviation * toleranceScale) {
+      return null;
+    }
     return PushUpState.wrongBodyAlignment;
   }
 
   // --- Rep-cycle phase machine -------------------------------------------
 
-  _PhaseResult _advancePhase(double rawAngle, DateTime now, {required bool formOk}) {
+  _PhaseResult _advancePhase(double rawAngle, DateTime now,
+      {required bool formOk}) {
     final previousSmoothed = _smoothedElbowAngle;
     final smoothed = previousSmoothed == null
         ? rawAngle
         : previousSmoothed + (rawAngle - previousSmoothed) * _smoothingFactor;
 
     final prevTime = _prevFrameTime;
-    final dtSeconds = prevTime == null ? 0.0 : now.difference(prevTime).inMicroseconds / 1e6;
+    final dtSeconds =
+        prevTime == null ? 0.0 : now.difference(prevTime).inMicroseconds / 1e6;
     final delta = previousSmoothed == null ? 0.0 : smoothed - previousSmoothed;
     final speed = dtSeconds > 0 ? delta.abs() / dtSeconds : 0.0;
-    final direction = delta.abs() < _directionEpsilonDegrees ? 0 : (delta < 0 ? -1 : 1);
+    final direction =
+        delta.abs() < _directionEpsilonDegrees ? 0 : (delta < 0 ? -1 : 1);
 
     if (direction != 0) _lastMovementTime = now;
     _lastMovementTime ??= now;
@@ -471,7 +510,8 @@ class PushUpFormDetector {
       case PushUpPhase.idle:
         if (rawAngle >= _t.topElbowAngle) {
           _phase = PushUpPhase.ready;
-          _freshReadyEntry = false; // announced immediately below, not next frame
+          _freshReadyEntry =
+              false; // announced immediately below, not next frame
           _lastMovementTime = now;
           positive = PushUpState.correctStartingPosition;
         } else {
@@ -479,7 +519,8 @@ class PushUpFormDetector {
         }
 
       case PushUpPhase.ready:
-        if (direction == -1 && smoothed < _t.topElbowAngle - _directionEpsilonDegrees) {
+        if (direction == -1 &&
+            smoothed < _t.topElbowAngle - _directionEpsilonDegrees) {
           _phase = PushUpPhase.descending;
           _minElbowAngleThisRep = smoothed;
           _reachedValidDepth = false;
@@ -585,7 +626,8 @@ class PushUpFormDetector {
     PoseLandmark? get(PoseLandmarkType left, PoseLandmarkType right) =>
         landmarks[isLeft ? left : right];
 
-    final shoulder = get(PoseLandmarkType.leftShoulder, PoseLandmarkType.rightShoulder);
+    final shoulder =
+        get(PoseLandmarkType.leftShoulder, PoseLandmarkType.rightShoulder);
     final elbow = get(PoseLandmarkType.leftElbow, PoseLandmarkType.rightElbow);
     final wrist = get(PoseLandmarkType.leftWrist, PoseLandmarkType.rightWrist);
     final hip = get(PoseLandmarkType.leftHip, PoseLandmarkType.rightHip);
@@ -665,7 +707,8 @@ class _DeviationTracker {
   /// the window instead of getting averaged in. Locking a baseline off an
   /// unstable window is exactly what produces a systematic offset in
   /// every later reading.
-  void maybeCalibrate(double smoothedValue, int calibrationFrames, double maxSpread) {
+  void maybeCalibrate(
+      double smoothedValue, int calibrationFrames, double maxSpread) {
     if (calibrated) return;
     _samples.add(smoothedValue);
     if (_samples.length > 1) {

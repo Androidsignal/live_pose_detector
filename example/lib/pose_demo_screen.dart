@@ -42,6 +42,17 @@ class _PoseDemoScreenState extends State<PoseDemoScreen> {
           CameraPoseView(
             initialLensDirection: widget.initialLensDirection,
             onPosesDetected: _onPosesDetected,
+            // Push-up form only needs the arms and torso drawn; the switch
+            // button goes top-right so it never collides with the
+            // bottom-centered feedback banner.
+            config: const PoseOverlayConfig(
+              showFaceLandmarks: false,
+              showFingerLandmarks: false,
+              showLegLandmarks: false,
+              showArmLandmarks: true,
+              showTorsoLandmarks: true,
+              cameraSwitchButtonPosition: CameraSwitchButtonPosition.topRight,
+            ),
           ),
           SafeArea(
             child: IconButton(
@@ -54,7 +65,8 @@ class _PoseDemoScreenState extends State<PoseDemoScreen> {
               alignment: Alignment.bottomCenter,
               child: ValueListenableBuilder<PushUpFeedback?>(
                 valueListenable: _feedback,
-                builder: (context, feedback, _) => PushUpFeedbackBanner(feedback: feedback),
+                builder: (context, feedback, _) =>
+                    PushUpFeedbackBanner(feedback: feedback),
               ),
             ),
           ),

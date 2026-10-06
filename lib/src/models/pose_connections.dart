@@ -50,3 +50,60 @@ const List<List<PoseLandmarkType>> kPoseConnections = [
   [PoseLandmarkType.rightHeel, PoseLandmarkType.rightFootIndex],
   [PoseLandmarkType.rightFootIndex, PoseLandmarkType.rightAnkle],
 ];
+
+/// Face landmarks — hidden when [PoseOverlayConfig.showFaceLandmarks] is
+/// false.
+const Set<PoseLandmarkType> kFaceLandmarks = {
+  PoseLandmarkType.nose,
+  PoseLandmarkType.leftEyeInner,
+  PoseLandmarkType.leftEye,
+  PoseLandmarkType.leftEyeOuter,
+  PoseLandmarkType.rightEyeInner,
+  PoseLandmarkType.rightEye,
+  PoseLandmarkType.rightEyeOuter,
+  PoseLandmarkType.leftEar,
+  PoseLandmarkType.rightEar,
+  PoseLandmarkType.leftMouth,
+  PoseLandmarkType.rightMouth,
+};
+
+/// Arm landmarks (elbows, wrists) — hidden when
+/// [PoseOverlayConfig.showArmLandmarks] is false. Shoulders stay visible.
+const Set<PoseLandmarkType> kArmLandmarks = {
+  PoseLandmarkType.leftElbow,
+  PoseLandmarkType.leftWrist,
+  PoseLandmarkType.rightElbow,
+  PoseLandmarkType.rightWrist,
+};
+
+/// Torso landmarks (hips) — hidden when
+/// [PoseOverlayConfig.showTorsoLandmarks] is false, which removes the
+/// shoulder-to-hip and hip-to-hip lines. Shoulders stay visible.
+const Set<PoseLandmarkType> kTorsoLandmarks = {
+  PoseLandmarkType.leftHip,
+  PoseLandmarkType.rightHip,
+};
+
+/// Finger landmarks (thumb, index, pinky) — hidden when
+/// [PoseOverlayConfig.showFingerLandmarks] is false. Wrists stay visible.
+const Set<PoseLandmarkType> kFingerLandmarks = {
+  PoseLandmarkType.leftThumb,
+  PoseLandmarkType.leftIndex,
+  PoseLandmarkType.leftPinky,
+  PoseLandmarkType.rightThumb,
+  PoseLandmarkType.rightIndex,
+  PoseLandmarkType.rightPinky,
+};
+
+/// Leg landmarks from the knee down — hidden when
+/// [PoseOverlayConfig.showLegLandmarks] is false. Hips stay visible.
+const Set<PoseLandmarkType> kLegLandmarks = {
+  PoseLandmarkType.leftKnee,
+  PoseLandmarkType.leftAnkle,
+  PoseLandmarkType.leftHeel,
+  PoseLandmarkType.leftFootIndex,
+  PoseLandmarkType.rightKnee,
+  PoseLandmarkType.rightAnkle,
+  PoseLandmarkType.rightHeel,
+  PoseLandmarkType.rightFootIndex,
+};

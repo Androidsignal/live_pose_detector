@@ -24,17 +24,24 @@ class _StartScreenState extends State<StartScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.accessibility_new, size: 96, color: Colors.greenAccent),
+              const Icon(Icons.accessibility_new,
+                  size: 96, color: Colors.greenAccent),
               const SizedBox(height: 16),
-              const Text('Live Pose Detector', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+              const Text('Live Pose Detector',
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
               const SizedBox(height: 32),
               SegmentedButton<CameraLensDirection>(
                 segments: const [
-                  ButtonSegment(value: CameraLensDirection.back, label: Text('Back camera')),
-                  ButtonSegment(value: CameraLensDirection.front, label: Text('Front camera')),
+                  ButtonSegment(
+                      value: CameraLensDirection.back,
+                      label: Text('Back camera')),
+                  ButtonSegment(
+                      value: CameraLensDirection.front,
+                      label: Text('Front camera')),
                 ],
                 selected: {_lensDirection},
-                onSelectionChanged: (selection) => setState(() => _lensDirection = selection.first),
+                onSelectionChanged: (selection) =>
+                    setState(() => _lensDirection = selection.first),
               ),
               const SizedBox(height: 32),
               FilledButton.icon(
@@ -42,7 +49,8 @@ class _StartScreenState extends State<StartScreen> {
                 label: const Text('Start'),
                 onPressed: () => Navigator.of(context).push(
                   MaterialPageRoute(
-                    builder: (_) => PoseDemoScreen(initialLensDirection: _lensDirection),
+                    builder: (_) =>
+                        PoseDemoScreen(initialLensDirection: _lensDirection),
                   ),
                 ),
               ),

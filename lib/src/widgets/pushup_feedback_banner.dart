@@ -44,6 +44,7 @@ class PushUpFeedbackBanner extends StatelessWidget {
     this.showRepCount = true,
     this.animationDuration = const Duration(milliseconds: 250),
     this.margin = const EdgeInsets.all(16),
+    this.maxWidth = 480,
   });
 
   /// Latest detector output. `null` renders nothing — pass this straight
@@ -76,6 +77,10 @@ class PushUpFeedbackBanner extends StatelessWidget {
   /// Outer spacing — matches typical `Positioned`/`SafeArea` placement
   /// without the caller needing to add their own `Padding`.
   final EdgeInsetsGeometry margin;
+
+  /// Upper bound on the banner's width so it stays readable on tablets and
+  /// in landscape instead of stretching edge to edge.
+  final double maxWidth;
 
   Color _colorFor(PushUpFeedbackColor color) {
     switch (color) {
@@ -121,28 +126,48 @@ class PushUpFeedbackBanner extends StatelessWidget {
               color: _colorFor(feedback.color),
               borderRadius: BorderRadius.circular(12),
               boxShadow: const [
-                BoxShadow(color: Colors.black26, blurRadius: 8, offset: Offset(0, 2)),
+                BoxShadow(
+                    color: Colors.black26, blurRadius: 8, offset: Offset(0, 2)),
               ],
             ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(_iconFor(feedback.color), color: textColor),
-                const SizedBox(width: 8),
-                Flexible(
-                  child: AnimatedSwitcher(
-                    duration: animationDuration,
-                    transitionBuilder: (child, animation) =>
-                        FadeTransition(opacity: animation, child: child),
-                    child: Text(
-                      feedback.message,
-                      key: ValueKey(feedback.state),
-                      textAlign: TextAlign.center,
-                      style: TextStyle(color: textColor, fontWeight: FontWeight.bold),
-                    ),
+            constraints: BoxConstraints(maxWidth: maxWidth),
+            child: AnimatedSize(
+              duration: animationDuration,
+              curve: Curves.easeInOut,
+              child: AnimatedSwitcher(
+                duration: animationDuration,
+                // Old message fades out over the first half, new one fades
+                // in over the second — the two never overlap on screen, so
+                // messages of different lengths don't render on top of
+                // each other mid-transition.
+                switchInCurve: const Interval(0.5, 1, curve: Curves.easeOut),
+                switchOutCurve: const Interval(0.5, 1, curve: Curves.easeIn),
+                transitionBuilder: (child, animation) =>
+                    FadeTransition(opacity: animation, child: child),
+                // Icon switches with the message, so a warning icon never
+                // sits on a success-colored banner during the transition.
+                child: Semantics(
+                  key: ValueKey(feedback.state),
+                  liveRegion: true,
+                  label: feedback.message,
+                  excludeSemantics: true,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(_iconFor(feedback.color), color: textColor),
+                      const SizedBox(width: 8),
+                      Flexible(
+                        child: Text(
+                          feedback.message,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                              color: textColor, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ],
+              ),
             ),
           ),
         ],

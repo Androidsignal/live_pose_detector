@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
-import 'package:flutter/foundation.dart' show TargetPlatform, defaultTargetPlatform;
+import 'package:flutter/foundation.dart'
+    show TargetPlatform, defaultTargetPlatform, setEquals;
 import 'package:flutter/material.dart';
 import 'package:google_mlkit_pose_detection/google_mlkit_pose_detection.dart';
 
@@ -52,6 +53,10 @@ class PoseOverlayPainter extends CustomPainter {
       // Halos first, then colored lines, then halo dots, then colored dots
       // — each layer renders on top of the last so joins/dots stay crisp.
       for (final pair in config.connections) {
+        if (!config.isLandmarkVisible(pair[0]) ||
+            !config.isLandmarkVisible(pair[1])) {
+          continue;
+        }
         final a = pose.landmarks[pair[0]];
         final b = pose.landmarks[pair[1]];
         if (a == null || b == null) continue;
@@ -67,6 +72,7 @@ class PoseOverlayPainter extends CustomPainter {
 
       for (final landmark in pose.landmarks.values) {
         if (landmark.likelihood < config.confidenceThreshold) continue;
+        if (!config.isLandmarkVisible(landmark.type)) continue;
         final point = mapPoint(Offset(landmark.x, landmark.y), frame, size);
         canvas.drawCircle(point, config.dotRadius + 1.5, dotHaloPaint);
         canvas.drawCircle(point, config.dotRadius, dotPaint);
@@ -104,8 +110,12 @@ class PoseOverlayPainter extends CustomPainter {
 
     final targetWidth = rotated ? imageSize.height : imageSize.width;
     final targetHeight = rotated ? imageSize.width : imageSize.height;
-    final xDivisor = rotated ? (isIOS ? imageSize.width : imageSize.height) : imageSize.width;
-    final yDivisor = rotated ? (isIOS ? imageSize.height : imageSize.width) : imageSize.height;
+    final xDivisor = rotated
+        ? (isIOS ? imageSize.width : imageSize.height)
+        : imageSize.width;
+    final yDivisor = rotated
+        ? (isIOS ? imageSize.height : imageSize.width)
+        : imageSize.height;
 
     var x = point.dx / xDivisor * targetWidth;
     final y = point.dy / yDivisor * targetHeight;
@@ -146,6 +156,12 @@ class PoseOverlayPainter extends CustomPainter {
         oldDelegate.config.lineWidth != config.lineWidth ||
         oldDelegate.config.haloColor != config.haloColor ||
         oldDelegate.config.confidenceThreshold != config.confidenceThreshold ||
-        oldDelegate.config.connections != config.connections;
+        oldDelegate.config.connections != config.connections ||
+        oldDelegate.config.showFaceLandmarks != config.showFaceLandmarks ||
+        oldDelegate.config.showFingerLandmarks != config.showFingerLandmarks ||
+        oldDelegate.config.showLegLandmarks != config.showLegLandmarks ||
+        oldDelegate.config.showArmLandmarks != config.showArmLandmarks ||
+        oldDelegate.config.showTorsoLandmarks != config.showTorsoLandmarks ||
+        !setEquals(oldDelegate.config.hiddenLandmarks, config.hiddenLandmarks);
   }
 }

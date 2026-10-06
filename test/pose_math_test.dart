@@ -28,7 +28,8 @@ void main() {
       expect(below, -above);
     });
 
-    test('normalized by line length — same fractional offset, same deviation', () {
+    test('normalized by line length — same fractional offset, same deviation',
+        () {
       final shortLine = signedLineDeviation(
         const Offset(0, 0),
         const Offset(100, 0),
@@ -42,7 +43,8 @@ void main() {
       expect(shortLine, closeTo(longLine, 1e-9));
     });
 
-    test('degenerate (zero-length) line returns 0 instead of dividing by zero', () {
+    test('degenerate (zero-length) line returns 0 instead of dividing by zero',
+        () {
       final deviation = signedLineDeviation(
         const Offset(10, 10),
         const Offset(10, 10),

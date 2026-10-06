@@ -36,7 +36,8 @@ void main() {
       debugDefaultTargetPlatformOverride = TargetPlatform.android;
     });
 
-    test('back camera subtracts device orientation from sensor orientation', () {
+    test('back camera subtracts device orientation from sensor orientation',
+        () {
       final rotation = converter.calculateRotation(
         sensorOrientation: 90,
         lensDirection: CameraLensDirection.back,
@@ -55,7 +56,9 @@ void main() {
     });
 
     for (final sensorOrientation in [0, 90, 180, 270]) {
-      test('handles sensorOrientation $sensorOrientation with zero device rotation', () {
+      test(
+          'handles sensorOrientation $sensorOrientation with zero device rotation',
+          () {
         final rotation = converter.calculateRotation(
           sensorOrientation: sensorOrientation,
           lensDirection: CameraLensDirection.back,

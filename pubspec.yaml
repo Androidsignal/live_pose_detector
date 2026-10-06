@@ -1,7 +1,14 @@
 name: live_pose_detector
 description: Real-time human pose detection with skeleton overlay for Flutter, plus a built-in push-up form checker and rep counter. Drop-in camera + ML Kit pose landmarks.
-version: 0.0.1
-homepage: https://github.com/your-org/live_pose_detector
+version: 0.0.2
+repository: https://github.com/Androidsignal/live_pose_detector
+issue_tracker: https://github.com/Androidsignal/live_pose_detector/issues
+topics:
+  - pose-detection
+  - ml-kit
+  - camera
+  - fitness
+  - computer-vision
 
 environment:
   sdk: '>=3.0.0 <4.0.0'

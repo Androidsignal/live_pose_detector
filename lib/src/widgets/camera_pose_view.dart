@@ -76,7 +76,8 @@ class CameraPoseViewState extends State<CameraPoseView>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _controller = PoseStreamController(detectionModel: widget.config.detectionModel);
+    _controller =
+        PoseStreamController(detectionModel: widget.config.detectionModel);
     _start(widget.initialLensDirection);
   }
 
@@ -104,7 +105,8 @@ class CameraPoseViewState extends State<CameraPoseView>
 
   /// Retries initialization after a failure (e.g. after the user grants
   /// camera permission and comes back).
-  Future<void> retry() => _start(_lastLensDirection ?? widget.initialLensDirection);
+  Future<void> retry() =>
+      _start(_lastLensDirection ?? widget.initialLensDirection);
 
   void _onFrame(PoseFrame frame) {
     if (!mounted) return;
@@ -146,7 +148,8 @@ class CameraPoseViewState extends State<CameraPoseView>
       final lensDirection =
           _controller.currentLensDirection ?? widget.initialLensDirection;
       _controller.dispose();
-      _controller = PoseStreamController(detectionModel: widget.config.detectionModel);
+      _controller =
+          PoseStreamController(detectionModel: widget.config.detectionModel);
       _lastLensDirection = lensDirection;
     } else if (state == AppLifecycleState.resumed) {
       _start(_lastLensDirection ?? widget.initialLensDirection);
@@ -175,7 +178,8 @@ class CameraPoseViewState extends State<CameraPoseView>
   }
 
   bool _needsAppSettings(Object error) =>
-      error is CameraPermissionDeniedException && error.status.isPermanentlyDenied;
+      error is CameraPermissionDeniedException &&
+      error.status.isPermanentlyDenied;
 
   @override
   void dispose() {
@@ -215,7 +219,8 @@ class CameraPoseViewState extends State<CameraPoseView>
                       ),
                       const SizedBox(width: 12),
                     ],
-                    ElevatedButton(onPressed: retry, child: const Text('Retry')),
+                    ElevatedButton(
+                        onPressed: retry, child: const Text('Retry')),
                   ],
                 ),
               ],
@@ -249,10 +254,9 @@ class CameraPoseViewState extends State<CameraPoseView>
             FittedBox(
               fit: BoxFit.cover,
               child: SizedBox(
-                width: cameraController.value.previewSize?.height ??
-                    size.width,
-                height: cameraController.value.previewSize?.width ??
-                    size.height,
+                width: cameraController.value.previewSize?.height ?? size.width,
+                height:
+                    cameraController.value.previewSize?.width ?? size.height,
                 child: CameraPreview(cameraController),
               ),
             ),
@@ -262,7 +266,8 @@ class CameraPoseViewState extends State<CameraPoseView>
                 builder: (context, frame, _) {
                   return CustomPaint(
                     size: size,
-                    painter: PoseOverlayPainter(frame: frame, config: widget.config),
+                    painter:
+                        PoseOverlayPainter(frame: frame, config: widget.config),
                   );
                 },
               ),
@@ -283,17 +288,36 @@ class CameraPoseViewState extends State<CameraPoseView>
           children: [
             previewAndOverlay,
             if (widget.config.showCameraSwitchButton)
-              Positioned(
-                right: 16,
-                bottom: 16,
-                child: FloatingActionButton(
-                  onPressed: switchCamera,
-                  child: const Icon(Icons.cameraswitch),
+              SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Align(
+                    alignment: _switchButtonAlignment(
+                      widget.config.cameraSwitchButtonPosition,
+                    ),
+                    child: FloatingActionButton(
+                      onPressed: switchCamera,
+                      child: const Icon(Icons.cameraswitch),
+                    ),
+                  ),
                 ),
               ),
           ],
         );
       },
     );
+  }
+
+  static Alignment _switchButtonAlignment(CameraSwitchButtonPosition position) {
+    switch (position) {
+      case CameraSwitchButtonPosition.topLeft:
+        return Alignment.topLeft;
+      case CameraSwitchButtonPosition.topRight:
+        return Alignment.topRight;
+      case CameraSwitchButtonPosition.bottomLeft:
+        return Alignment.bottomLeft;
+      case CameraSwitchButtonPosition.bottomRight:
+        return Alignment.bottomRight;
+    }
   }
 }

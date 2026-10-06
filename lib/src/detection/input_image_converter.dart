@@ -33,8 +33,7 @@ class InputImageConverter {
     // multiple planes that must be concatenated; iOS (BGRA8888) is a
     // single plane already in the right byte layout.
     if (defaultTargetPlatform == TargetPlatform.android) {
-      if (format != InputImageFormat.nv21 &&
-          format != InputImageFormat.yv12) {
+      if (format != InputImageFormat.nv21 && format != InputImageFormat.yv12) {
         return null;
       }
       final bytes = _concatenatePlanes(image.planes);
@@ -83,8 +82,7 @@ class InputImageConverter {
     // Front camera sensors are mirrored relative to back camera sensors.
     var rotationCompensation = deviceOrientationDegrees;
     if (lensDirection == CameraLensDirection.front) {
-      rotationCompensation =
-          (sensorOrientation + rotationCompensation) % 360;
+      rotationCompensation = (sensorOrientation + rotationCompensation) % 360;
     } else {
       rotationCompensation =
           (sensorOrientation - rotationCompensation + 360) % 360;

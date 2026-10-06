@@ -4,6 +4,9 @@ import 'package:google_mlkit_pose_detection/google_mlkit_pose_detection.dart';
 
 import '../models/pose_connections.dart';
 
+/// Where [CameraPoseView] places its built-in camera switch button.
+enum CameraSwitchButtonPosition { topLeft, topRight, bottomLeft, bottomRight }
+
 /// Single configuration object for [CameraPoseView] — dot/line appearance,
 /// confidence gating, skeleton topology and camera capture quality.
 ///
@@ -20,9 +23,16 @@ class PoseOverlayConfig {
     this.connections = kPoseConnections,
     this.resolutionPreset = ResolutionPreset.medium,
     this.showCameraSwitchButton = true,
+    this.cameraSwitchButtonPosition = CameraSwitchButtonPosition.bottomRight,
     this.detectionModel = PoseDetectionModel.accurate,
     this.haloColor = Colors.black45,
     this.requestCameraPermission = true,
+    this.showFaceLandmarks = true,
+    this.showFingerLandmarks = true,
+    this.showLegLandmarks = true,
+    this.showArmLandmarks = true,
+    this.showTorsoLandmarks = true,
+    this.hiddenLandmarks = const {},
   });
 
   /// Color of the landmark dots.
@@ -55,6 +65,11 @@ class PoseOverlayConfig {
   /// `CameraPoseViewController.switchCamera()` directly.
   final bool showCameraSwitchButton;
 
+  /// Corner of the preview where the built-in camera switch button sits.
+  /// Default [CameraSwitchButtonPosition.bottomRight]. Ignored when
+  /// [showCameraSwitchButton] is false.
+  final CameraSwitchButtonPosition cameraSwitchButtonPosition;
+
   /// ML Kit model quality. [PoseDetectionModel.accurate] gives more precise
   /// landmarks at higher inference cost; [PoseDetectionModel.base] trades
   /// precision for speed. Default is [PoseDetectionModel.accurate].
@@ -71,6 +86,40 @@ class PoseOverlayConfig {
   /// to skip the extra request.
   final bool requestCameraPermission;
 
+  /// Whether face points ([kFaceLandmarks]) and their lines are drawn.
+  final bool showFaceLandmarks;
+
+  /// Whether finger points ([kFingerLandmarks]) and their lines are drawn.
+  final bool showFingerLandmarks;
+
+  /// Whether leg points from the knee down ([kLegLandmarks]) and their
+  /// lines are drawn.
+  final bool showLegLandmarks;
+
+  /// Whether arm points ([kArmLandmarks] — elbows, wrists) and their lines
+  /// are drawn.
+  final bool showArmLandmarks;
+
+  /// Whether torso points ([kTorsoLandmarks] — hips) and their lines are
+  /// drawn.
+  final bool showTorsoLandmarks;
+
+  /// Any individual points to hide on top of the `show*Landmarks` group
+  /// toggles, e.g. `{PoseLandmarkType.leftHip}`.
+  final Set<PoseLandmarkType> hiddenLandmarks;
+
+  /// Whether [type] should be drawn, given the `show*Landmarks` toggles.
+  /// A line is only drawn when both of its ends are visible.
+  bool isLandmarkVisible(PoseLandmarkType type) {
+    if (!showFaceLandmarks && kFaceLandmarks.contains(type)) return false;
+    if (!showFingerLandmarks && kFingerLandmarks.contains(type)) return false;
+    if (!showLegLandmarks && kLegLandmarks.contains(type)) return false;
+    if (!showArmLandmarks && kArmLandmarks.contains(type)) return false;
+    if (!showTorsoLandmarks && kTorsoLandmarks.contains(type)) return false;
+    if (hiddenLandmarks.contains(type)) return false;
+    return true;
+  }
+
   PoseOverlayConfig copyWith({
     Color? dotColor,
     Color? lineColor,
@@ -80,9 +129,16 @@ class PoseOverlayConfig {
     List<List<PoseLandmarkType>>? connections,
     ResolutionPreset? resolutionPreset,
     bool? showCameraSwitchButton,
+    CameraSwitchButtonPosition? cameraSwitchButtonPosition,
     PoseDetectionModel? detectionModel,
     Color? haloColor,
     bool? requestCameraPermission,
+    bool? showFaceLandmarks,
+    bool? showFingerLandmarks,
+    bool? showLegLandmarks,
+    bool? showArmLandmarks,
+    bool? showTorsoLandmarks,
+    Set<PoseLandmarkType>? hiddenLandmarks,
   }) {
     return PoseOverlayConfig(
       dotColor: dotColor ?? this.dotColor,
@@ -94,10 +150,18 @@ class PoseOverlayConfig {
       resolutionPreset: resolutionPreset ?? this.resolutionPreset,
       showCameraSwitchButton:
           showCameraSwitchButton ?? this.showCameraSwitchButton,
+      cameraSwitchButtonPosition:
+          cameraSwitchButtonPosition ?? this.cameraSwitchButtonPosition,
       detectionModel: detectionModel ?? this.detectionModel,
       haloColor: haloColor ?? this.haloColor,
       requestCameraPermission:
           requestCameraPermission ?? this.requestCameraPermission,
+      showFaceLandmarks: showFaceLandmarks ?? this.showFaceLandmarks,
+      showFingerLandmarks: showFingerLandmarks ?? this.showFingerLandmarks,
+      showLegLandmarks: showLegLandmarks ?? this.showLegLandmarks,
+      showArmLandmarks: showArmLandmarks ?? this.showArmLandmarks,
+      showTorsoLandmarks: showTorsoLandmarks ?? this.showTorsoLandmarks,
+      hiddenLandmarks: hiddenLandmarks ?? this.hiddenLandmarks,
     );
   }
 }

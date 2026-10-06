@@ -1,0 +1,7 @@
+# Inherit .gitignore rules, plus files that must not ship to pub.dev.
+/.dart_tool/
+/build/
+.DS_Store
+/.idea/
+*.iml
+medium_article.md

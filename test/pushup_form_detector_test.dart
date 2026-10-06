@@ -43,12 +43,16 @@ Pose buildPose({
 
   return Pose(
     landmarks: {
-      PoseLandmarkType.leftShoulder: lm(PoseLandmarkType.leftShoulder, shoulder),
-      PoseLandmarkType.leftElbow: lm(PoseLandmarkType.leftElbow, rotated(elbow)),
-      PoseLandmarkType.leftWrist: lm(PoseLandmarkType.leftWrist, rotated(wrist)),
+      PoseLandmarkType.leftShoulder:
+          lm(PoseLandmarkType.leftShoulder, shoulder),
+      PoseLandmarkType.leftElbow:
+          lm(PoseLandmarkType.leftElbow, rotated(elbow)),
+      PoseLandmarkType.leftWrist:
+          lm(PoseLandmarkType.leftWrist, rotated(wrist)),
       PoseLandmarkType.leftHip: lm(PoseLandmarkType.leftHip, rotated(hipPoint)),
       PoseLandmarkType.leftKnee: lm(PoseLandmarkType.leftKnee, rotated(knee)),
-      PoseLandmarkType.leftAnkle: lm(PoseLandmarkType.leftAnkle, rotated(ankle)),
+      PoseLandmarkType.leftAnkle:
+          lm(PoseLandmarkType.leftAnkle, rotated(ankle)),
       PoseLandmarkType.leftEar: lm(PoseLandmarkType.leftEar, rotated(ear)),
     },
   );
@@ -74,8 +78,12 @@ void main() {
     test('missing landmarks -> Starting Position', () {
       final detector = PushUpFormDetector();
       final pose = Pose(landmarks: {
-        PoseLandmarkType.leftShoulder:
-            PoseLandmark(type: PoseLandmarkType.leftShoulder, x: 0, y: 0, z: 0, likelihood: 0.9),
+        PoseLandmarkType.leftShoulder: PoseLandmark(
+            type: PoseLandmarkType.leftShoulder,
+            x: 0,
+            y: 0,
+            z: 0,
+            likelihood: 0.9),
       });
       final feedback = detector.evaluate([pose]);
       expect(feedback.state, PushUpState.startingPosition);
@@ -87,7 +95,8 @@ void main() {
       final first = detector.evaluate([buildPose()], now: t0);
       expect(first.state, PushUpState.correctStartingPosition);
 
-      final dropped = detector.evaluate(const [], now: t0.add(const Duration(milliseconds: 200)));
+      final dropped = detector
+          .evaluate(const [], now: t0.add(const Duration(milliseconds: 200)));
       expect(dropped, same(first));
     });
 
@@ -96,20 +105,24 @@ void main() {
       final t0 = DateTime(2026);
       detector.evaluate([buildPose()], now: t0);
 
-      final dropped = detector.evaluate(const [], now: t0.add(const Duration(seconds: 2)));
+      final dropped =
+          detector.evaluate(const [], now: t0.add(const Duration(seconds: 2)));
       expect(dropped.state, PushUpState.startingPosition);
     });
   });
 
   group('correct starting position', () {
-    test('straight body, good elbow angle -> Correct Starting Position, green', () {
+    test('straight body, good elbow angle -> Correct Starting Position, green',
+        () {
       final detector = PushUpFormDetector();
       final feedback = detector.evaluate([buildPose()]);
       expect(feedback.state, PushUpState.correctStartingPosition);
       expect(feedback.color, PushUpFeedbackColor.success);
     });
 
-    test('holding correct position without moving eventually says No Movement Detected', () {
+    test(
+        'holding correct position without moving eventually says No Movement Detected',
+        () {
       final detector = PushUpFormDetector();
       var t = DateTime(2026);
       final first = detector.evaluate([buildPose()], now: t);
@@ -163,7 +176,9 @@ void main() {
       expect(feedback.state, PushUpState.bodyTooHigh);
     });
 
-    test('mild hip deviation -> Back Not Straight (not severe enough for a direction)', () {
+    test(
+        'mild hip deviation -> Back Not Straight (not severe enough for a direction)',
+        () {
       final feedback = persist(() => buildPose(hipDeviationFrac: 0.08));
       expect(feedback.state, PushUpState.backNotStraight);
     });
@@ -194,14 +209,14 @@ void main() {
     });
 
     test('hip issue outranks a simultaneous elbow issue', () {
-      final feedback =
-          persist(() => buildPose(hipDeviationFrac: 0.35, abductionAngleDeg: 70));
+      final feedback = persist(
+          () => buildPose(hipDeviationFrac: 0.35, abductionAngleDeg: 70));
       expect(feedback.state, PushUpState.bodyTooLow);
     });
 
     test('head issue outranks a simultaneous elbow issue', () {
-      final feedback =
-          persist(() => buildPose(headDeviationFrac: 0.35, abductionAngleDeg: 70));
+      final feedback = persist(
+          () => buildPose(headDeviationFrac: 0.35, abductionAngleDeg: 70));
       expect(feedback.state, PushUpState.headTooLow);
     });
 
@@ -224,7 +239,9 @@ void main() {
   });
 
   group('full rep cycle', () {
-    test('correct starting -> controlled descent -> correct depth -> controlled ascent -> top counts a rep', () {
+    test(
+        'correct starting -> controlled descent -> correct depth -> controlled ascent -> top counts a rep',
+        () {
       final detector = PushUpFormDetector();
       var t = DateTime(2026);
       const dt = Duration(milliseconds: 150);
@@ -232,11 +249,13 @@ void main() {
       final states = <PushUpState>[];
       void step(double elbowAngle) {
         t = t.add(dt);
-        states.add(detector.evaluate([buildPose(elbowAngleDeg: elbowAngle)], now: t).state);
+        states.add(detector
+            .evaluate([buildPose(elbowAngleDeg: elbowAngle)], now: t).state);
       }
 
       // Settle at the top first.
-      states.add(detector.evaluate([buildPose(elbowAngleDeg: 170)], now: t).state);
+      states.add(
+          detector.evaluate([buildPose(elbowAngleDeg: 170)], now: t).state);
       // Controlled descent, ~13°/frame at 150ms -> well under the fast-movement
       // threshold. Elbow angle is EMA-smoothed internally, so a few repeated
       // frames at the target hold are needed for the smoothed value to
@@ -257,7 +276,9 @@ void main() {
       expect(detector.repCount, 1);
     });
 
-    test('reversing before reaching depth is Not Going Low Enough and does not count', () {
+    test(
+        'reversing before reaching depth is Not Going Low Enough and does not count',
+        () {
       final detector = PushUpFormDetector();
       var t = DateTime(2026);
       const dt = Duration(milliseconds: 150);
@@ -265,7 +286,8 @@ void main() {
 
       void step(double elbowAngle) {
         t = t.add(dt);
-        states.add(detector.evaluate([buildPose(elbowAngleDeg: elbowAngle)], now: t).state);
+        states.add(detector
+            .evaluate([buildPose(elbowAngleDeg: elbowAngle)], now: t).state);
       }
 
       step(170);
@@ -279,7 +301,8 @@ void main() {
       expect(detector.repCount, 0);
     });
 
-    test('descending past the safe depth is Going Too Low and does not count', () {
+    test('descending past the safe depth is Going Too Low and does not count',
+        () {
       final detector = PushUpFormDetector();
       var t = DateTime(2026);
       const dt = Duration(milliseconds: 150);
@@ -287,7 +310,8 @@ void main() {
 
       void step(double elbowAngle) {
         t = t.add(dt);
-        states.add(detector.evaluate([buildPose(elbowAngleDeg: elbowAngle)], now: t).state);
+        states.add(detector
+            .evaluate([buildPose(elbowAngleDeg: elbowAngle)], now: t).state);
       }
 
       step(170);
@@ -303,7 +327,9 @@ void main() {
       expect(detector.repCount, 0);
     });
 
-    test('a form issue during the rep marks it incomplete even if depth was reached', () {
+    test(
+        'a form issue during the rep marks it incomplete even if depth was reached',
+        () {
       final detector = PushUpFormDetector();
       var t = DateTime(2026);
       const dt = Duration(milliseconds: 150);
@@ -311,7 +337,10 @@ void main() {
       void step(double elbowAngle, {double hipDeviationFrac = 0}) {
         t = t.add(dt);
         detector.evaluate(
-          [buildPose(elbowAngleDeg: elbowAngle, hipDeviationFrac: hipDeviationFrac)],
+          [
+            buildPose(
+                elbowAngleDeg: elbowAngle, hipDeviationFrac: hipDeviationFrac)
+          ],
           now: t,
         );
       }
@@ -321,9 +350,19 @@ void main() {
       step(100, hipDeviationFrac: 0.35); // sagging mid-rep
       step(90);
       final last = <PushUpState>[];
-      for (final angle in [100.0, 120.0, 140.0, 160.0, 175.0, 175.0, 175.0, 175.0]) {
+      for (final angle in [
+        100.0,
+        120.0,
+        140.0,
+        160.0,
+        175.0,
+        175.0,
+        175.0,
+        175.0
+      ]) {
         t = t.add(dt);
-        last.add(detector.evaluate([buildPose(elbowAngleDeg: angle)], now: t).state);
+        last.add(
+            detector.evaluate([buildPose(elbowAngleDeg: angle)], now: t).state);
       }
 
       expect(last, contains(PushUpState.incompletePushUp));
@@ -332,7 +371,9 @@ void main() {
   });
 
   group('calibration robustness', () {
-    test('an unstable window (settling into position) does not lock in a bad baseline', () {
+    test(
+        'an unstable window (settling into position) does not lock in a bad baseline',
+        () {
       final detector = PushUpFormDetector();
       var t = DateTime(2026);
       void step(Pose pose) {
@@ -360,7 +401,9 @@ void main() {
   });
 
   group('body-orientation gate', () {
-    test('standing up mid-set (body rotated away from calibrated push-up angle) stops rep tracking', () {
+    test(
+        'standing up mid-set (body rotated away from calibrated push-up angle) stops rep tracking',
+        () {
       final detector = PushUpFormDetector();
       var t = DateTime(2026);
       const dt = Duration(milliseconds: 150);
@@ -379,7 +422,8 @@ void main() {
       final states = <PushUpState>[];
       for (final angle in [150.0, 120.0, 90.0, 90.0, 90.0, 130.0, 160.0]) {
         states.add(
-          detector.evaluate([buildPose(elbowAngleDeg: angle, bodyAngleDeg: 90)], now: t).state,
+          detector.evaluate([buildPose(elbowAngleDeg: angle, bodyAngleDeg: 90)],
+              now: t).state,
         );
         t = t.add(dt);
       }
@@ -388,7 +432,9 @@ void main() {
       expect(detector.repCount, 0);
     });
 
-    test('returning to the calibrated orientation resumes tracking without recalibrating', () {
+    test(
+        'returning to the calibrated orientation resumes tracking without recalibrating',
+        () {
       final detector = PushUpFormDetector();
       var t = DateTime(2026);
       const dt = Duration(milliseconds: 150);

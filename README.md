@@ -56,6 +56,13 @@ CameraPoseView(
 | `resolutionPreset` | `medium` | Camera quality vs. speed |
 | `detectionModel` | `accurate` | ML Kit model quality vs. speed |
 | `showCameraSwitchButton` | `true` | Built-in front/back FAB |
+| `cameraSwitchButtonPosition` | `bottomRight` | FAB corner: `topLeft` / `topRight` / `bottomLeft` / `bottomRight` |
+| `showFaceLandmarks` | `true` | Set `false` to hide face points |
+| `showFingerLandmarks` | `true` | Set `false` to hide finger points (thumb/index/pinky) |
+| `showLegLandmarks` | `true` | Set `false` to hide leg points (knee down) |
+| `showArmLandmarks` | `true` | Set `false` to hide arm points (elbows, wrists) |
+| `showTorsoLandmarks` | `true` | Set `false` to hide hips and the shoulder-hip / hip-hip lines |
+| `hiddenLandmarks` | `{}` | Hide any single points, e.g. `{PoseLandmarkType.leftHip}` |
 | `requestCameraPermission` | `true` | Set `false` if you handle permission yourself |
 
 ## Push-up form detection

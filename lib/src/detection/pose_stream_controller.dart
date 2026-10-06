@@ -89,8 +89,9 @@ class PoseStreamController {
     required CameraLensDirection lensDirection,
     required ResolutionPreset resolutionPreset,
   }) async {
-    _availableCameras =
-        _availableCameras.isEmpty ? await availableCameras() : _availableCameras;
+    _availableCameras = _availableCameras.isEmpty
+        ? await availableCameras()
+        : _availableCameras;
 
     final description = _availableCameras.firstWhere(
       (camera) => camera.lensDirection == lensDirection,
@@ -157,7 +158,8 @@ class PoseStreamController {
 
   /// Stops the current stream, disposes the old controller, and
   /// reinitializes with the opposite lens direction.
-  Future<void> switchCamera({required ResolutionPreset resolutionPreset}) async {
+  Future<void> switchCamera(
+      {required ResolutionPreset resolutionPreset}) async {
     final current = currentLensDirection ?? CameraLensDirection.back;
     final next = current == CameraLensDirection.back
         ? CameraLensDirection.front

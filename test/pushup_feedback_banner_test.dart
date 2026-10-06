@@ -3,8 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:live_pose_detector/live_pose_detector.dart';
 
 void main() {
-  Widget host(PushUpFeedback? feedback) =>
-      MaterialApp(home: Scaffold(body: PushUpFeedbackBanner(feedback: feedback)));
+  Widget host(PushUpFeedback? feedback) => MaterialApp(
+      home: Scaffold(body: PushUpFeedbackBanner(feedback: feedback)));
 
   testWidgets('renders nothing when feedback is null', (tester) async {
     await tester.pumpWidget(host(null));
@@ -52,7 +52,9 @@ void main() {
     );
     await tester.pumpWidget(
       const MaterialApp(
-        home: Scaffold(body: PushUpFeedbackBanner(feedback: feedback, showRepCount: false)),
+        home: Scaffold(
+            body:
+                PushUpFeedbackBanner(feedback: feedback, showRepCount: false)),
       ),
     );
     await tester.pumpAndSettle();
@@ -85,7 +87,52 @@ void main() {
     await tester.pump(); // mid-transition
     await tester.pumpAndSettle();
 
-    expect(find.text('Keep your back straight and maintain a strong core.'), findsOneWidget);
+    expect(find.text('Keep your back straight and maintain a strong core.'),
+        findsOneWidget);
     expect(find.text('Good! Keep lowering with control.'), findsNothing);
+  });
+
+  testWidgets('old and new messages are never visible at the same time',
+      (tester) async {
+    const first = PushUpFeedback(
+      state: PushUpState.correctDownwardMovement,
+      message: 'Good! Keep lowering with control.',
+      color: PushUpFeedbackColor.success,
+      repCount: 0,
+      phase: PushUpPhase.descending,
+    );
+    const second = PushUpFeedback(
+      state: PushUpState.backNotStraight,
+      message: 'Keep your back straight and maintain a strong core.',
+      color: PushUpFeedbackColor.warning,
+      repCount: 0,
+      phase: PushUpPhase.descending,
+    );
+
+    double opacityOf(String text) {
+      final fade = tester.widget<FadeTransition>(
+        find
+            .ancestor(
+                of: find.text(text), matching: find.byType(FadeTransition))
+            .first,
+      );
+      return fade.opacity.value;
+    }
+
+    await tester.pumpWidget(host(first));
+    await tester.pumpAndSettle();
+    await tester.pumpWidget(host(second));
+
+    for (var ms = 0; ms <= 250; ms += 25) {
+      await tester.pump(const Duration(milliseconds: 25));
+      if (find.text(first.message).evaluate().isEmpty) break;
+      final oldOpacity = opacityOf(first.message);
+      final newOpacity = opacityOf(second.message);
+      expect(oldOpacity == 0 || newOpacity == 0, isTrue,
+          reason: 'at ${ms}ms old=$oldOpacity new=$newOpacity');
+    }
+    await tester.pumpAndSettle();
+    expect(find.byIcon(Icons.warning_amber_rounded), findsOneWidget);
+    expect(find.byIcon(Icons.check_circle), findsNothing);
   });
 }
