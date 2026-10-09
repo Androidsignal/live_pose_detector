@@ -13,6 +13,16 @@ Requires Flutter >= 3.0, Dart >= 3.0, Android minSdk 21+, iOS 13+.
 | Android, iOS | ✅ |
 | macOS, Windows, Linux, Web | ❌ — `google_mlkit_pose_detection` (the ML backend) only ships Android + iOS |
 
+## Screenshots
+
+<p align="center">
+  <img src="screenshots/pushup.webp" height="180" alt="Push-up" title="Push-up">
+  <img src="screenshots/squats.webp" height="180" alt="Squat" title="Squat">
+  <img src="screenshots/lateral_raises.webp" height="180" alt="Lateral raise" title="Lateral raise">
+  <img src="screenshots/jumping_jack.webp" height="180" alt="Jumping jack" title="Jumping jack">
+  <img src="screenshots/lunges.webp" height="180" alt="Lunge" title="Lunge">
+</p>
+
 ## Install
 
 ```yaml

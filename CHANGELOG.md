@@ -1,3 +1,7 @@
+## 0.0.3
+
+- README: added screenshots of the skeleton overlay on push-ups, squats, lateral raises, jumping jacks, and lunges.
+
 ## 0.0.2
 
 - `PoseOverlayConfig.cameraSwitchButtonPosition` — place the built-in camera switch button in any corner (`topLeft`, `topRight`, `bottomLeft`, `bottomRight`). The button now respects safe-area insets.
