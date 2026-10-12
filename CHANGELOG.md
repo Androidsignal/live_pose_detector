@@ -1,3 +1,8 @@
+## 0.0.5
+
+- Works on every Flutter >= 3.10 / Dart >= 3.0, including beta/dev SDKs such as `3.12.0-*.dev`. 0.0.4 required Dart 3.12.0 stable and failed version solving on anything older.
+- Dependency constraints are widened so pub picks plugin versions that match your SDK: `camera` >=0.10.5 <0.13.0, `google_mlkit_pose_detection` >=0.11.0 <0.17.0, `permission_handler` >=10.4.0 <14.0.0. Verified against both the oldest and newest allowed versions.
+
 ## 0.0.4
 
 - Fixed `CameraException(Disposed CameraController, buildPreview() was called on a disposed CameraController.)` when the app went to the background, a system overlay appeared, or the camera was switched.

@@ -6,7 +6,7 @@ Real-time pose detection with a skeleton overlay, plus a built-in push-up form c
 
 `CameraPoseView` owns the camera, permission, ML Kit detection, and skeleton rendering. `PushUpFormDetector` + `PushUpFeedbackBanner` add posture feedback and rep counting on top of the same landmark stream.
 
-Requires Flutter >= 3.0, Dart >= 3.0, Android minSdk 21+, iOS 13+.
+Works on any Flutter >= 3.10 (Dart >= 3.0), including beta/dev channels — pub automatically picks `camera`, `google_mlkit_pose_detection` and `permission_handler` versions that match your SDK. Android minSdk 21+, iOS 13+ (newer ML Kit versions may need a higher iOS target; see their docs).
 
 | Platform | Supported |
 |---|---|
