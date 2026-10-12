@@ -10,6 +10,19 @@ topics:
   - fitness
   - computer-vision
 
+# pub.dev shows the first screenshot as the package thumbnail.
+screenshots:
+  - description: Live skeleton overlay with push-up form feedback and rep counter.
+    path: screenshots/pushup.webp
+  - description: Pose skeleton tracking a squat.
+    path: screenshots/squats.webp
+  - description: Pose skeleton tracking a lateral raise.
+    path: screenshots/lateral_raises.webp
+  - description: Pose skeleton tracking a jumping jack.
+    path: screenshots/jumping_jack.webp
+  - description: Pose skeleton tracking a lunge.
+    path: screenshots/lunges.webp
+
 environment:
   sdk: '>=3.0.0 <4.0.0'
   flutter: ">=3.0.0"
