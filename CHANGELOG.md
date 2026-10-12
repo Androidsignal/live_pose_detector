@@ -1,3 +1,9 @@
+## 0.0.4
+
+- Fixed `CameraException(Disposed CameraController, buildPreview() was called on a disposed CameraController.)` when the app went to the background, a system overlay appeared, or the camera was switched.
+- The camera is now released only when the app is truly backgrounded (`paused`), not on `inactive` (notification shade, screenshots, system dialogs).
+- Updated dependencies: `camera` ^0.12.1, `google_mlkit_pose_detection` ^0.16.1, `permission_handler` ^13.0.2.
+
 ## 0.0.3
 
 - README: added screenshots of the skeleton overlay on push-ups, squats, lateral raises, jumping jacks, and lunges.

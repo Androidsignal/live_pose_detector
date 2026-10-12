@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:camera/camera.dart';
@@ -62,6 +63,7 @@ class CameraPoseViewState extends State<CameraPoseView>
     with WidgetsBindingObserver
     implements CameraPoseViewController {
   late PoseStreamController _controller;
+  StreamSubscription<PoseFrame>? _frameSubscription;
 
   /// Latest detected frame, pushed straight to the [CustomPaint] via
   /// [ValueListenableBuilder] — bypasses [setState] so only the skeleton
@@ -71,6 +73,15 @@ class CameraPoseViewState extends State<CameraPoseView>
   final ValueNotifier<PoseFrame?> _frameNotifier = ValueNotifier(null);
   bool _isReady = false;
   Object? _error;
+
+  /// True while the camera is released because the app went to the
+  /// background; cleared when it is restarted on resume.
+  bool _releasedForLifecycle = false;
+
+  /// In-flight teardown of the released controller — awaited before
+  /// restarting so the new camera never races the old one's dispose.
+  Future<void>? _releaseFuture;
+  CameraLensDirection? _lastLensDirection;
 
   @override
   void initState() {
@@ -82,6 +93,7 @@ class CameraPoseViewState extends State<CameraPoseView>
   }
 
   Future<void> _start(CameraLensDirection lensDirection) async {
+    final controller = _controller;
     setState(() => _error = null);
     try {
       if (widget.config.requestCameraPermission) {
@@ -90,17 +102,25 @@ class CameraPoseViewState extends State<CameraPoseView>
           throw CameraPermissionDeniedException(status);
         }
       }
-      await _controller.initialize(
+      await controller.initialize(
         lensDirection: lensDirection,
         resolutionPreset: widget.config.resolutionPreset,
       );
-      _controller.poseStream.listen(_onFrame);
+      // Controller was released (app backgrounded) mid-start — the resume
+      // path will start a fresh one.
+      if (!identical(controller, _controller)) return;
+      _listenToFrames();
       if (mounted) setState(() => _isReady = true);
     } catch (error) {
-      if (!mounted) return;
+      if (!mounted || !identical(controller, _controller)) return;
       setState(() => _error = error);
       widget.onError?.call(error);
     }
+  }
+
+  void _listenToFrames() {
+    _frameSubscription?.cancel();
+    _frameSubscription = _controller.poseStream.listen(_onFrame);
   }
 
   /// Retries initialization after a failure (e.g. after the user grants
@@ -117,18 +137,24 @@ class CameraPoseViewState extends State<CameraPoseView>
 
   @override
   Future<void> switchCamera() async {
+    final controller = _controller;
     setState(() {
       _isReady = false;
       _error = null;
     });
+    // Let the spinner frame replace CameraPreview before the old camera is
+    // disposed, so the preview never builds against a dead controller.
+    await WidgetsBinding.instance.endOfFrame;
+    if (!mounted || !identical(controller, _controller)) return;
     try {
-      await _controller.switchCamera(
+      await controller.switchCamera(
         resolutionPreset: widget.config.resolutionPreset,
       );
-      _controller.poseStream.listen(_onFrame);
+      if (!identical(controller, _controller)) return;
+      _listenToFrames();
       if (mounted) setState(() => _isReady = true);
     } catch (error) {
-      if (!mounted) return;
+      if (!mounted || !identical(controller, _controller)) return;
       setState(() => _error = error);
       widget.onError?.call(error);
     }
@@ -136,27 +162,44 @@ class CameraPoseViewState extends State<CameraPoseView>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    final cameraController = _controller.cameraController;
-    if (cameraController == null || !cameraController.value.isInitialized) {
-      return;
-    }
-
-    if (state == AppLifecycleState.inactive ||
-        state == AppLifecycleState.paused) {
-      // Camera released on background — reinitialized on resume, avoids
-      // "camera already in use" errors.
-      final lensDirection =
-          _controller.currentLensDirection ?? widget.initialLensDirection;
-      _controller.dispose();
-      _controller =
-          PoseStreamController(detectionModel: widget.config.detectionModel);
-      _lastLensDirection = lensDirection;
-    } else if (state == AppLifecycleState.resumed) {
-      _start(_lastLensDirection ?? widget.initialLensDirection);
+    // Only release on `paused` (truly backgrounded). `inactive` also fires
+    // for screenshots, the notification shade, Control Center, and system
+    // dialogs — the camera keeps working through those, and tearing it
+    // down there left CameraPreview rendering a disposed controller.
+    if (state == AppLifecycleState.paused) {
+      _releaseCamera();
+    } else if (state == AppLifecycleState.resumed && _releasedForLifecycle) {
+      _resumeCamera();
     }
   }
 
-  CameraLensDirection? _lastLensDirection;
+  /// Releases the camera so other apps can use it while we're in the
+  /// background — avoids "camera already in use" errors on resume.
+  void _releaseCamera() {
+    if (_releasedForLifecycle || _controller.cameraController == null) return;
+    _releasedForLifecycle = true;
+    _lastLensDirection =
+        _controller.currentLensDirection ?? widget.initialLensDirection;
+
+    final old = _controller;
+    _frameSubscription?.cancel();
+    _frameSubscription = null;
+    _controller =
+        PoseStreamController(detectionModel: widget.config.detectionModel);
+    // Rebuild before disposing so CameraPreview never sees a dead controller.
+    if (mounted) setState(() => _isReady = false);
+    _releaseFuture = old.dispose().catchError((Object _) {});
+  }
+
+  Future<void> _resumeCamera() async {
+    _releasedForLifecycle = false;
+    final pending = _releaseFuture;
+    _releaseFuture = null;
+    if (pending != null) await pending;
+    // Re-backgrounded while waiting, or widget gone — nothing to start.
+    if (!mounted || _releasedForLifecycle) return;
+    await _start(_lastLensDirection ?? widget.initialLensDirection);
+  }
 
   String _describeError(Object error) {
     if (error is CameraPermissionDeniedException) {
@@ -184,6 +227,7 @@ class CameraPoseViewState extends State<CameraPoseView>
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    _frameSubscription?.cancel();
     _controller.dispose();
     _frameNotifier.dispose();
     super.dispose();

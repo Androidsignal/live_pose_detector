@@ -3,7 +3,7 @@
 /// Drop [CameraPoseView] into a screen to get a live camera feed with an
 /// ML Kit pose skeleton drawn over it — camera capture, detection, and
 /// rendering are all owned by this package.
-library live_pose_detector;
+library;
 
 export 'package:camera/camera.dart' show CameraLensDirection, ResolutionPreset;
 export 'package:google_mlkit_pose_detection/google_mlkit_pose_detection.dart'
