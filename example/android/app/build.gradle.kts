@@ -6,7 +6,7 @@ plugins {
 
 android {
     namespace = "com.example.live_pose_detector_example"
-    compileSdk = flutter.compileSdkVersion
+    compileSdk = 37
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
