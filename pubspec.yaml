@@ -12,6 +12,8 @@ topics:
 
 # pub.dev shows the first screenshot as the package thumbnail.
 screenshots:
+  - description: Live pose skeleton on push-ups, squats, lateral raises, jumping jacks and lunges.
+    path: screenshots/overview.webp
   - description: Live skeleton overlay with push-up form feedback and rep counter.
     path: screenshots/pushup.webp
   - description: Pose skeleton tracking a squat.
